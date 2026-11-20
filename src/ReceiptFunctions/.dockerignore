@@ -1,0 +1,6 @@
+bin/
+obj/
+local.settings.json
+local.settings.json.example
+Dockerfile
+.dockerignore

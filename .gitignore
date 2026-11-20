@@ -11,3 +11,7 @@ __pycache__/
 *.pfx
 # Local files from fast-start, never committed
 .fast-start/
+# .NET build output and local Functions settings (copy local.settings.json.example)
+bin/
+obj/
+local.settings.json
