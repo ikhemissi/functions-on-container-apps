@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <!-- A starting point in the house style: replace the boxes and arrows, keep the palette, the markers and the canvas.
+       Arrows go from the caller to what it calls; show SKUs and measured behaviour, not prices. Render it and look at
+       it before publishing. -->
+  <title id="title">TODO: the sample's title</title>
+  <desc id="desc">TODO: what the image shows, in a few sentences, for screen readers.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3d4466"/>
+    </marker>
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#138a7a"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#1b1f3b" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <style>
+    text { fill: #1b1f3b; }
+    .title { font-size: 34px; font-weight: 700; }
+    .subtitle { font-size: 18px; fill: #4a5072; }
+    .name { font-size: 18px; font-weight: 700; }
+    .group { font-size: 16px; font-weight: 700; fill: #0b5cad; }
+    .kind { font-size: 14px; fill: #4a5072; }
+    .edge { font-size: 13px; fill: #3d4466; font-weight: 600; }
+    .footer { font-size: 14px; fill: #4a5072; }
+  </style>
+
+  <rect width="1200" height="675" fill="#f7f8fc"/>
+  <text class="title" x="48" y="66">TODO: the sample's title</text>
+  <text class="subtitle" x="48" y="98">TODO: the one-line promise.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="80" y="260" width="240" height="110" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/>
+  </g>
+  <text class="name" x="200" y="308" text-anchor="middle">Caller</text>
+  <text class="kind" x="200" y="332" text-anchor="middle">its identity</text>
+
+  <rect x="440" y="160" width="700" height="320" rx="14" fill="#eef4fb" stroke="#0b5cad" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text class="group" x="460" y="190">A group (resource group, virtual network)</text>
+  <g filter="url(#shadow)">
+    <rect x="520" y="260" width="240" height="110" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/>
+  </g>
+  <text class="name" x="640" y="308" text-anchor="middle">Service</text>
+  <text class="kind" x="640" y="332" text-anchor="middle">its SKU</text>
+  <g filter="url(#shadow)">
+    <rect x="860" y="260" width="240" height="110" rx="12" fill="#ffffff" stroke="#138a7a" stroke-width="1.5"/>
+  </g>
+  <text class="name" x="980" y="308" text-anchor="middle">Dependency</text>
+  <text class="kind" x="980" y="332" text-anchor="middle">its SKU</text>
+
+  <line x1="320" y1="315" x2="514" y2="315" stroke="#3d4466" stroke-width="2" marker-end="url(#arrow)"/>
+  <text class="edge" x="417" y="303" text-anchor="middle">calls</text>
+  <line x1="760" y1="315" x2="854" y2="315" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
+  <text class="edge" x="807" y="303" text-anchor="middle">uses</text>
+
+  <text class="footer" x="48" y="620">TODO: one line on what the arrows and colours mean.</text>
+</svg>

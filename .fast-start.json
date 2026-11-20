@@ -1,0 +1,39 @@
+{
+  "composition": "sample",
+  "source": {
+    "commit": "4d3f81b16787b8fb6a28f6a6c63d0810f09390ab",
+    "describe": "v0.3.0-77-g4d3f81b",
+    "dirty": true
+  },
+  "generated_at": "2026-11-20T20:22:51+00:00",
+  "blocks": [
+    "azure-root",
+    "monitoring",
+    "container-apps-environment",
+    "container-registry",
+    "key-vault"
+  ],
+  "modules": [
+    "monitoring",
+    "container-apps-environment",
+    "container-registry",
+    "key-vault"
+  ],
+  "answers": {
+    "project_name": "functions-on-container-apps",
+    "title": "Azure Functions on Container Apps",
+    "promise": "Event-driven .NET functions on Azure Container Apps (native kind=functionapp), passwordless and scaling to zero, deployed with azd and Terraform.",
+    "demo_runbook": false,
+    "azure_stack": false,
+    "litellm_gateway": false,
+    "apim_gateway": false,
+    "azure_base": true,
+    "azure_core": false,
+    "notes_mcp": false,
+    "chat_ui": false,
+    "foundry_agents": false,
+    "environment": "functions-on-container-apps",
+    "location": "francecentral",
+    "author": "Iheb Khemissi"
+  }
+}
