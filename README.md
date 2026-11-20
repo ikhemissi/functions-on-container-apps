@@ -7,51 +7,80 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![IaC: Terraform](https://img.shields.io/badge/IaC-Terraform-623CE4?style=flat-square&logo=terraform)](infra)
 [![Deploy: azd](https://img.shields.io/badge/deploy-azd-0078D4?style=flat-square)](azure.yaml)
+[![.NET 10](https://img.shields.io/badge/.NET-10%20isolated-512BD4?style=flat-square&logo=dotnet)](src)
 
 [**Why**](#why-this-sample) · [**How it works**](#how-it-works) · [**Quick start**](#quick-start) · [**Cost**](#cost) · [**Documentation**](#documentation)
 
 </div>
 
-> **Status:** in progress. The design is in [the decisions](docs/DECISIONS.md); what is checked, how and when, in [the verification table](docs/verification.md).
-
-![TODO: what the overview shows, in one or two sentences, for screen readers](docs/overview.svg)
+> **Status (2026-11-20): in progress, not deployed yet.** The infrastructure is written and passes its offline checks; the function code is being written. Everything marked *not tested yet* is the design, not a result: [the verification table](docs/verification.md) tracks each check.
 
 ## Why this sample
 
-TODO: the problem in three or four sentences, before the solution.
+Azure Functions can run on Azure Container Apps as a container app of kind `functionapp`: the Functions programming model, on the same platform, network and scale rules as your other containers. Most examples use Bicep and connection strings. This sample shows the same pattern with Terraform and azd, with managed identities for every connection, and with uploads reaching the functions through Event Grid and a queue, so that no function key has to be created or shared.
 
 ## What it shows
 
-- TODO: one bullet per pattern the sample shows.
+- A function app declared as a **container app of kind `functionapp`** (`Microsoft.App/containerApps`), with Terraform and the azapi provider.
+- **No keys or connection strings:** host storage, data storage and telemetry go through the app's user-assigned managed identity; both storage accounts have shared keys disabled.
+- **Event Grid to a storage queue** with the topic's own managed identity: an upload becomes a queue message, which triggers a function.
+- **Scale to zero:** Container Apps generates the scale rules from the triggers (HTTP and the queue).
+- **One command to deploy** with azd (remote image build in Azure Container Registry), one to tear down.
 
-TODO: one line on the scenario (fictional company, fictional data).
+The scenario: fictional receipts. A CSV file (`date,merchant,amount,currency`) uploaded to the `receipts` container is summed per currency, and the summary is stored in a table and listed over HTTP.
 
 ## How it works
 
-TODO: what runs where, and with which identities; one arrow per call, from the caller to what it calls.
+> *Not tested yet:* the flow below is the design (decisions [D1–D7](docs/DECISIONS.md)); [V2–V6](docs/verification.md) will confirm it.
 
 ```mermaid
 flowchart LR
-    user(["User"]) --> client["TODO: client"]
-    client -->|"TODO: identity"| service["TODO: what the sample shows"]
-    service --> dependency["TODO: what it calls"]
+    user(["You"]) -->|"upload a CSV<br/>(Entra sign-in)"| blob["Data storage<br/>receipts container"]
+    blob -->|"BlobCreated"| eg["Event Grid<br/>system topic"]
+    eg -->|"queue message<br/>(topic's managed identity)"| queue["Data storage<br/>receipts-uploaded queue"]
+    func["Function app on Container Apps<br/>kind: functionapp"] -->|"reads messages<br/>(app's managed identity)"| queue
+    func -->|"reads the blob"| blob
+    func -->|"writes the summary"| table["Data storage<br/>ReceiptSummaries table"]
+    user -->|"GET /api/summaries"| func
+    func -->|"host storage<br/>(managed identity)"| host["Host storage<br/>(leases, keys, state)"]
+    func -->|"telemetry<br/>(Entra auth)"| ai["Application Insights"]
 ```
+
+| Function | Trigger | What it does |
+|---|---|---|
+| `SummarizeReceipts` | Queue `receipts-uploaded` (Event Grid `BlobCreated` events) | Reads the uploaded CSV, sums the amounts per currency, skips and counts malformed lines, writes one row to `ReceiptSummaries` |
+| `ListSummaries` | HTTP `GET /api/summaries` (anonymous, read-only) | Returns the 20 newest summaries as JSON |
+
+Who acts on each call:
+
+| Call | Identity |
+|---|---|
+| Event Grid → queue | The system topic's system-assigned identity (Storage Queue Data Message Sender on the data account) |
+| Function app → host storage | The app's user-assigned identity (Blob Data Owner, Queue and Table Data Contributor on the host account) |
+| Function app → data storage | The same identity (Blob Data Reader, Queue and Table Data Contributor on the data account) |
+| Function app → Application Insights | The same identity (Monitoring Metrics Publisher) |
+| Container Apps → registry | A separate pull identity (AcrPull) |
 
 ## What runs where
 
 | Folder | What it holds |
 |---|---|
+| [`infra/functions.tf`](infra/functions.tf) | The sample's own resources: both storage accounts, the container, queue and table, Event Grid, the function app |
+| [`infra/modules/function-app-container-apps/`](infra/modules/function-app-container-apps) | The function app module: container app of kind `functionapp`, its identity and roles, identity-based settings, tests |
+| `infra/` (other files) | The shared base: resource group, Log Analytics and Application Insights, Container Apps environment, container registry, Key Vault, azd hooks |
+| `src/` | The functions (.NET 10 isolated worker), their tests and the Dockerfile (*in progress*) |
 | `docs/` | Decisions, verification, the overview image |
-| `src/` | TODO |
-| `infra/` | The infrastructure: one Terraform root, its modules and azd hooks |
 
 ## Quick start
 
+> *Not tested yet:* these steps have not been run end to end ([V2](docs/verification.md)).
+
 Prerequisites:
 
-- TODO: roles, licences, tools with their versions.
+- An Azure subscription where you can create resources and assign roles (Owner, or Contributor and Role Based Access Control Administrator).
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli), [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) and [Terraform](https://developer.hashicorp.com/terraform/install) 1.9 or later. No local Docker: the image is built in Azure Container Registry.
 
-The infrastructure is one Terraform root (`infra/`), one file per part, built from the modules in `infra/modules/`. azd runs the steps of `infra/hooks/<event>/` around it (state backend before, configuration after, a clean teardown).
+The infrastructure is one Terraform root (`infra/`), one file per part, built from the modules in `infra/modules/`. azd runs the steps of `infra/hooks/<event>/` around it (state backend before, port switch after the first deployment, a clean teardown).
 
 ```bash
 az login && azd auth login
@@ -59,26 +88,48 @@ azd env new functions-on-container-apps --location francecentral
 azd env set RESOURCE_TAGS "key=value,key=value"   # tags your tenant's policies require, if any
 azd hooks run preprovision                        # remote state backend: once before the first preview
 azd provision --preview                           # read the plan
-azd up                                            # provision, then deploy the services
+azd up                                            # provision, then build and deploy the functions
 ```
 
 Later changes: `azd provision --preview`, read the plan, then `azd provision`.
 
-Tear it down with `azd down --purge` (see [Clean up](#clean-up)).
+## Try it
 
-## Daily use
+> *Not tested yet* ([V4, V5](docs/verification.md)). Uploading needs a data role on the data account for your own account, which the infrastructure does not assign.
 
-TODO: what to do once it runs: open it, share it, observe it.
+```bash
+eval "$(azd env get-values)"
+az role assignment create --assignee "$(az ad signed-in-user show --query id -o tsv)" \
+  --role "Storage Blob Data Contributor" \
+  --scope "$(az storage account show -n "$DATA_STORAGE_ACCOUNT" --query id -o tsv)"
+
+az storage blob upload --auth-mode login --account-name "$DATA_STORAGE_ACCOUNT" \
+  --container-name "$RECEIPTS_CONTAINER" --name receipts-2026-11.csv --file samples/receipts-2026-11.csv
+
+curl -s "$RECEIPT_FUNCTIONS_URL/api/summaries"
+```
+
+The first call after an idle period waits for a replica to start (scale from zero).
 
 ## Design notes
 
-The decisions a reader would question, each in one paragraph, with a link to [the decisions](docs/DECISIONS.md).
+- **Native `kind: functionapp` rather than a `Microsoft.Web/sites` app on a Container Apps environment** ([D1](docs/DECISIONS.md)): Microsoft recommends the native model for new workloads.
+- **azapi for the function app** ([D2](docs/DECISIONS.md)): `azurerm_container_app` has no `kind` argument in azurerm 4.x.
+- **Event Grid to a queue rather than a blob trigger** ([D3](docs/DECISIONS.md)): no system key to create, store and rotate for an Event Grid webhook, and the queue trigger has a generated scale rule.
+- **Two storage accounts** ([D4](docs/DECISIONS.md)): the Functions host's own blobs, queues and tables stay apart from the sample's data.
+- **Port 8080** ([D5](docs/DECISIONS.md)): the image sets it explicitly, so that the switch from the placeholder image (port 80) happens once, after the first deployment.
 
 ## Tech stack
 
-| Technology | Role | Version |
+| Technology | Role | Version (2026-11-20) |
 |---|---|---|
-| TODO | TODO | TODO (dated) |
+| Azure Container Apps | Hosting (Consumption workload profile), `Microsoft.App/containerApps` API `2025-07-01` | — |
+| Azure Functions | Programming model; host image `mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated10.0` | Functions v4 |
+| .NET | Function code, isolated worker | 10 |
+| Azure Event Grid | Blob events to the queue | — |
+| Azure Storage | Host storage; data (blob, queue, table) | — |
+| Terraform | Infrastructure, azurerm and azapi providers | 1.15.8; azurerm 4.81; azapi 2.14 |
+| Azure Developer CLI | Provision, build and deploy | — |
 
 ## Documentation
 
@@ -91,17 +142,17 @@ The decisions a reader would question, each in one paragraph, with a link to [th
 
 ## Versions and preview notes
 
-Dated, factual and neutral: pre-release packages, settings in preview, what depends on the tenant or the region.
-
-- TODO
+- The function app is declared with API version `2025-07-01` of `Microsoft.App/containerApps` (2026-11-20).
+- Container Apps generates scale rules from the triggers and needs ingress enabled for them; blob triggers scale only with Event Grid as their source ([Functions on Container Apps](https://learn.microsoft.com/azure/container-apps/functions-overview), page updated 2026-09-09).
+- Deployment slots and creating function keys in the portal are not available for Functions on Container Apps (same page).
 
 ## Clean up
 
-`azd down --purge` deletes the resource group and everything in it.
+`azd down --purge` deletes the resource group and everything in it, and purges what is soft-deleted.
 
 ## Cost
 
-TODO: measured, per day and per month, with the date (Cost Management), and the list prices it compares with. Prices go here, not in the overview image.
+*Not measured yet* ([V7](docs/verification.md)). The app scales to zero when idle; the expected idle cost is the storage accounts, the container registry (Basic) and the logs.
 
 ## License
 
