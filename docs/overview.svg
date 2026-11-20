@@ -2,8 +2,8 @@
   <!-- A starting point in the house style: replace the boxes and arrows, keep the palette, the markers and the canvas.
        Arrows go from the caller to what it calls; show SKUs and measured behaviour, not prices. Render it and look at
        it before publishing. -->
-  <title id="title">TODO: the sample's title</title>
-  <desc id="desc">TODO: what the image shows, in a few sentences, for screen readers.</desc>
+  <title id="title">Azure Functions on Container Apps</title>
+  <desc id="desc">You upload a receipts CSV to blob storage. Event Grid turns the upload into a message on a storage queue, with its own managed identity. A function app hosted on Azure Container Apps (kind functionapp, scaling from zero) reads the message and the blob, and writes a summary to a table, with its managed identity. You read the summaries over HTTP. The function app keeps its host state in a second storage account and sends telemetry to Application Insights, also with its managed identity.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#3d4466"/>
@@ -26,33 +26,59 @@
     .footer { font-size: 14px; fill: #4a5072; }
   </style>
 
-  <rect width="1200" height="675" fill="#f7f8fc"/>
-  <text class="title" x="48" y="66">TODO: the sample's title</text>
-  <text class="subtitle" x="48" y="98">TODO: the one-line promise.</text>
-
-  <g filter="url(#shadow)">
-    <rect x="80" y="260" width="240" height="110" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/>
-  </g>
-  <text class="name" x="200" y="308" text-anchor="middle">Caller</text>
-  <text class="kind" x="200" y="332" text-anchor="middle">its identity</text>
-
-  <rect x="440" y="160" width="700" height="320" rx="14" fill="#eef4fb" stroke="#0b5cad" stroke-width="1.5" stroke-dasharray="6 4"/>
-  <text class="group" x="460" y="190">A group (resource group, virtual network)</text>
-  <g filter="url(#shadow)">
-    <rect x="520" y="260" width="240" height="110" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/>
-  </g>
-  <text class="name" x="640" y="308" text-anchor="middle">Service</text>
-  <text class="kind" x="640" y="332" text-anchor="middle">its SKU</text>
-  <g filter="url(#shadow)">
-    <rect x="860" y="260" width="240" height="110" rx="12" fill="#ffffff" stroke="#138a7a" stroke-width="1.5"/>
-  </g>
-  <text class="name" x="980" y="308" text-anchor="middle">Dependency</text>
-  <text class="kind" x="980" y="332" text-anchor="middle">its SKU</text>
-
-  <line x1="320" y1="315" x2="514" y2="315" stroke="#3d4466" stroke-width="2" marker-end="url(#arrow)"/>
-  <text class="edge" x="417" y="303" text-anchor="middle">calls</text>
-  <line x1="760" y1="315" x2="854" y2="315" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
-  <text class="edge" x="807" y="303" text-anchor="middle">uses</text>
-
-  <text class="footer" x="48" y="620">TODO: one line on what the arrows and colours mean.</text>
+    <rect width="1200" height="675" fill="#f7f8fc"/>
+  <text class="title" x="48" y="62">Azure Functions on Container Apps</text>
+  <text class="subtitle" x="48" y="92">Event-driven .NET functions, kind=functionapp, passwordless, scaling to zero. Deployed with azd and Terraform.</text>
+  <rect x="290" y="122" width="880" height="500" rx="14" fill="#eef4fb" stroke="#0b5cad" stroke-width="1.5"/>
+  <text class="group" x="310" y="148">Azure: one resource group, public endpoints, Entra authentication, no shared keys</text>
+  <g filter="url(#shadow)"><rect x="330" y="180" width="220" height="84" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/></g>
+  <text class="name" x="440.0" y="210" text-anchor="middle">Blob container</text>
+  <text class="kind" x="440.0" y="232" text-anchor="middle">receipts</text>
+  <text class="kind" x="440.0" y="250" text-anchor="middle">Data storage (Standard LRS)</text>
+  <g filter="url(#shadow)"><rect x="620" y="180" width="220" height="84" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/></g>
+  <text class="name" x="730.0" y="210" text-anchor="middle">Event Grid</text>
+  <text class="kind" x="730.0" y="232" text-anchor="middle">system topic</text>
+  <text class="kind" x="730.0" y="250" text-anchor="middle">BlobCreated, receipts/ only</text>
+  <g filter="url(#shadow)"><rect x="924" y="180" width="220" height="84" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/></g>
+  <text class="name" x="1034.0" y="210" text-anchor="middle">Storage queue</text>
+  <text class="kind" x="1034.0" y="232" text-anchor="middle">receipts-uploaded</text>
+  <text class="kind" x="1034.0" y="250" text-anchor="middle">Data storage</text>
+  <g filter="url(#shadow)"><rect x="575" y="340" width="310" height="90" rx="12" fill="#ffffff" stroke="#138a7a" stroke-width="1.5"/></g>
+  <text class="name" x="730.0" y="370" text-anchor="middle">Function app</text>
+  <text class="kind" x="730.0" y="392" text-anchor="middle">Container Apps, kind functionapp</text>
+  <text class="kind" x="730.0" y="410" text-anchor="middle">Consumption, 0 to 10 replicas</text>
+  <g filter="url(#shadow)"><rect x="330" y="510" width="220" height="84" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/></g>
+  <text class="name" x="440.0" y="540" text-anchor="middle">Storage table</text>
+  <text class="kind" x="440.0" y="562" text-anchor="middle">ReceiptSummaries</text>
+  <text class="kind" x="440.0" y="580" text-anchor="middle">Data storage</text>
+  <g filter="url(#shadow)"><rect x="620" y="510" width="220" height="84" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/></g>
+  <text class="name" x="730.0" y="540" text-anchor="middle">Host storage</text>
+  <text class="kind" x="730.0" y="562" text-anchor="middle">leases, keys, state</text>
+  <text class="kind" x="730.0" y="580" text-anchor="middle">Standard LRS</text>
+  <g filter="url(#shadow)"><rect x="910" y="510" width="220" height="84" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/></g>
+  <text class="name" x="1020.0" y="540" text-anchor="middle">Application Insights</text>
+  <text class="kind" x="1020.0" y="562" text-anchor="middle">telemetry</text>
+  <text class="kind" x="1020.0" y="580" text-anchor="middle">Entra-authenticated</text>
+  <g filter="url(#shadow)"><rect x="40" y="180" width="176" height="84" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/></g>
+  <text class="name" x="128.0" y="210" text-anchor="middle">You</text>
+  <text class="kind" x="128.0" y="232" text-anchor="middle">your Entra sign-in</text>
+  <polyline points="216,222 324,222" fill="none" stroke="#3d4466" stroke-width="2" marker-end="url(#arrow)"/>
+  <text class="edge" x="224" y="212" text-anchor="start">upload</text>
+  <polyline points="550,222 614,222" fill="none" stroke="#3d4466" stroke-width="2" marker-end="url(#arrow)"/>
+  <text class="edge" x="582" y="212" text-anchor="middle">event</text>
+  <polyline points="840,222 918,222" fill="none" stroke="#3d4466" stroke-width="2" marker-end="url(#arrow)"/>
+  <text class="edge" x="879" y="212" text-anchor="middle">queue</text>
+  <polyline points="860,340 1004,270" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
+  <text class="edge" x="960" y="318" text-anchor="start">reads message</text>
+  <polyline points="600,340 470,270" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
+  <text class="edge" x="500" y="318" text-anchor="end">reads blob</text>
+  <polyline points="620,430 470,504" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
+  <text class="edge" x="510" y="470" text-anchor="end">writes summary</text>
+  <polyline points="730,430 730,504" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
+  <text class="edge" x="740" y="472" text-anchor="start">host state</text>
+  <polyline points="840,430 990,504" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
+  <text class="edge" x="930" y="465" text-anchor="start">telemetry</text>
+  <polyline points="128,264 128,385 569,385" fill="none" stroke="#3d4466" stroke-width="2" marker-end="url(#arrow)"/>
+  <text class="edge" x="310" y="376" text-anchor="start">GET /api/summaries</text>
+  <text class="footer" x="48" y="650">Arrows go from the caller to what it calls. Teal: the function app's managed identity. Event Grid writes to the queue with its own identity.</text>
 </svg>

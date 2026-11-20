@@ -13,6 +13,8 @@
 
 </div>
 
+![You upload a receipts CSV; Event Grid turns it into a queue message with its own identity; a function app on Azure Container Apps (kind functionapp, scaling from zero) reads the message and the blob and writes a summary to a table with its managed identity; you read the summaries over HTTP.](docs/overview.svg)
+
 > **Status (2026-11-20): deployed and working end to end.** An upload is summarized about 12 seconds later, through Event Grid, the queue and the function, with managed identities only. Scaling to zero and back and the cost are *not tested yet*: [the verification table](docs/verification.md) tracks each check.
 
 ## Why this sample
