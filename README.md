@@ -13,7 +13,7 @@
 
 </div>
 
-> **Status (2026-11-20): in progress, not deployed yet.** The infrastructure is written and passes its offline checks; the function code is being written. Everything marked *not tested yet* is the design, not a result: [the verification table](docs/verification.md) tracks each check.
+> **Status (2026-11-20): deployed and working end to end.** An upload is summarized about 12 seconds later, through Event Grid, the queue and the function, with managed identities only. Scaling to zero and back and the cost are *not tested yet*: [the verification table](docs/verification.md) tracks each check.
 
 ## Why this sample
 
@@ -31,7 +31,7 @@ The scenario: fictional receipts. A CSV file (`date,merchant,amount,currency`) u
 
 ## How it works
 
-> *Not tested yet:* the flow below is the design (decisions [D1–D7](docs/DECISIONS.md)); [V2–V6](docs/verification.md) will confirm it.
+> Verified on 2026-11-20 ([V2–V5](docs/verification.md)); scaling from and to zero is *not tested yet* ([V6](docs/verification.md)).
 
 ```mermaid
 flowchart LR
@@ -68,12 +68,13 @@ Who acts on each call:
 | [`infra/functions.tf`](infra/functions.tf) | The sample's own resources: both storage accounts, the container, queue and table, Event Grid, the function app |
 | [`infra/modules/function-app-container-apps/`](infra/modules/function-app-container-apps) | The function app module: container app of kind `functionapp`, its identity and roles, identity-based settings, tests |
 | `infra/` (other files) | The shared base: resource group, Log Analytics and Application Insights, Container Apps environment, container registry, Key Vault, azd hooks |
-| `src/` | The functions (.NET 10 isolated worker), their tests and the Dockerfile (*in progress*) |
+| `src/` | The functions (.NET 10 isolated worker), their tests and the Dockerfile |
+| `samples/` | A fictional receipts CSV to upload |
 | `docs/` | Decisions, verification, the overview image |
 
 ## Quick start
 
-> *Not tested yet:* these steps have not been run end to end ([V2](docs/verification.md)).
+> Run end to end on 2026-11-20 ([V2](docs/verification.md)): about 6 minutes for `azd up`.
 
 Prerequisites:
 
@@ -95,7 +96,7 @@ Later changes: `azd provision --preview`, read the plan, then `azd provision`.
 
 ## Try it
 
-> *Not tested yet* ([V4, V5](docs/verification.md)). Uploading needs a data role on the data account for your own account, which the infrastructure does not assign.
+> Verified on 2026-11-20 ([V4, V5](docs/verification.md)). Uploading needs a data role on the data account for your own account, which the infrastructure does not assign; allow a minute for the role to apply.
 
 ```bash
 eval "$(azd env get-values)"
@@ -109,6 +110,12 @@ az storage blob upload --auth-mode login --account-name "$DATA_STORAGE_ACCOUNT" 
 curl -s "$RECEIPT_FUNCTIONS_URL/api/summaries"
 ```
 
+With the sample file, the answer is:
+
+```json
+[{"blobName":"receipts-2026-11.csv","lineCount":10,"malformedLineCount":0,"totals":{"EUR":94.70,"GBP":12.35,"USD":248.99},"processedAt":"…"}]
+```
+
 The first call after an idle period waits for a replica to start (scale from zero).
 
 ## Design notes
@@ -117,6 +124,7 @@ The first call after an idle period waits for a replica to start (scale from zer
 - **azapi for the function app** ([D2](docs/DECISIONS.md)): `azurerm_container_app` has no `kind` argument in azurerm 4.x.
 - **Event Grid to a queue rather than a blob trigger** ([D3](docs/DECISIONS.md)): no system key to create, store and rotate for an Event Grid webhook, and the queue trigger has a generated scale rule.
 - **Two storage accounts** ([D4](docs/DECISIONS.md)): the Functions host's own blobs, queues and tables stay apart from the sample's data.
+- **The table through Azure Resource Manager** ([D9](docs/DECISIONS.md)): `azurerm_storage_table` sets access policies with a shared key, which the data account refuses; azapi creates it through ARM.
 - **Port 8080** ([D5](docs/DECISIONS.md)): the image sets it explicitly, so that the switch from the placeholder image (port 80) happens once, after the first deployment.
 
 ## Tech stack
