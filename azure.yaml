@@ -7,6 +7,16 @@ infra:
   provider: terraform
   path: infra
 
+# Built in the container registry (remote build) and deployed to the function app on Container Apps (infra/functions.tf).
+services:
+  receipt-functions:
+    project: ./src/ReceiptFunctions
+    language: dotnet
+    host: containerapp
+    docker:
+      path: Dockerfile
+      remoteBuild: true
+
 # Each event runs the steps of infra/hooks/<event>/ in name order (infra/hooks/run.sh): what Terraform cannot do.
 hooks:
   preprovision:
