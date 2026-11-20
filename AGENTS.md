@@ -33,7 +33,7 @@ The cloud agent has no Azure access; its toolchain comes from `.github/workflows
 - Never run `azd`, `az` or anything that needs credentials; never change the files of shared building blocks (see Infrastructure).
 - Offline checks, all of them before asking for review:
   - Terraform: `terraform -chdir=infra fmt -check -recursive`, `terraform -chdir=infra init -backend=false && terraform -chdir=infra validate`, and `terraform init -backend=false && terraform test` in each `infra/modules/<module>`.
-  - .NET: `dotnet build src && dotnet test src` (warnings as errors), and the container image builds (`docker build src/ReceiptFunctions` in CI).
+  - .NET: `dotnet build src && dotnet test --solution src/ReceiptFunctions.slnx` (warnings as errors), and the container image builds (`docker build src/ReceiptFunctions` in CI).
   - Scripts: `shellcheck -x` on every `*.sh`.
 
 ## Code humans can maintain

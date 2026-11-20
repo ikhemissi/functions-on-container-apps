@@ -22,7 +22,7 @@ jobs:
       - name: Build
         run: dotnet build src -warnaserror
       - name: Test
-        run: dotnet test src
+        run: dotnet test --solution src/ReceiptFunctions.slnx
       - name: Container image
         run: docker build src/ReceiptFunctions
 
