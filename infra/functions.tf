@@ -48,9 +48,13 @@ resource "azurerm_storage_queue" "receipts_uploaded" {
   storage_account_id = module.data_storage.id
 }
 
-resource "azurerm_storage_table" "receipt_summaries" {
-  name               = local.summaries_table
-  storage_account_id = module.data_storage.id
+# azapi rather than azurerm_storage_table: azurerm also sets the table's access policies through the data plane with
+# a shared key, which these accounts refuse (403 "Key based authentication is not permitted").
+resource "azapi_resource" "receipt_summaries" {
+  type      = "Microsoft.Storage/storageAccounts/tableServices/tables@2024-01-01"
+  name      = local.summaries_table
+  parent_id = "${module.data_storage.id}/tableServices/default"
+  body      = {}
 }
 
 # Event Grid delivers the data account's BlobCreated events to the queue with the topic's own identity (D3).
