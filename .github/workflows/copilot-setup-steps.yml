@@ -1,0 +1,38 @@
+# Environment of the GitHub Copilot cloud agent: the same toolchain as CI (.github/workflows/ci.yml), with every
+# dependency fetched here, before the agent's firewall applies, so that it can run all offline checks of AGENTS.md.
+# No Azure access and no secrets: the agent never deploys.
+name: "Copilot Setup Steps"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+permissions:
+  contents: read
+
+jobs:
+  # The job MUST be called `copilot-setup-steps` for the Copilot coding agent to pick it up.
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: "10.0.x"
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: "1.15.8"
+          terraform_wrapper: false
+
+      - name: Terraform providers
+        run: |
+          terraform -chdir=infra init -backend=false -input=false
+          for module in infra/modules/*/; do terraform -chdir="$module" init -backend=false -input=false; done
+      - name: .NET packages
+        run: if [ -n "$(git ls-files '*.slnx' '*.csproj')" ]; then dotnet restore src; fi

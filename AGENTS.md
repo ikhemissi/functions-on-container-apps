@@ -25,6 +25,17 @@ This repository is a **public sample**: it shows one pattern, working, for anyon
 - **One Terraform root** (`infra/`, one state), one file per part of the architecture. The files from shared building blocks (`container-apps-environment.tf`, `container-registry.tf`, `key-vault.tf`, `monitoring.tf`, `main.tf`, `providers.tf`, …), the modules in `infra/modules/` and the hook steps in `infra/hooks/<event>/` stay as they are, so that their improvements can be merged in later. Put the sample's own resources in a new file of `infra/` (calling a module of `infra/modules/` where one fits), its settings as variables mapped in `infra/main.tfvars.json`, its outputs as azd values, and its steps in `infra/hooks/<event>/NN-<name>.sh`.
 - **Before every `azd provision`:** `azd provision --preview` (one plan for the whole root) and read it: only expected adds and changes, no unexpected destroy. Module tests: `terraform init -backend=false && terraform test` in `infra/modules/<module>`.
 
+## GitHub Copilot cloud agent
+
+The cloud agent has no Azure access; its toolchain comes from `.github/workflows/copilot-setup-steps.yml` (.NET 10, Terraform). Deployment and the live checks of [verification](docs/verification.md) are done in a session with Azure access.
+
+- Follow [docs/DECISIONS.md](docs/DECISIONS.md); when an issue needs a decision it does not cover, say so in the PR instead of choosing silently.
+- Never run `azd`, `az` or anything that needs credentials; never change the files of shared building blocks (see Infrastructure).
+- Offline checks, all of them before asking for review:
+  - Terraform: `terraform -chdir=infra fmt -check -recursive`, `terraform -chdir=infra init -backend=false && terraform -chdir=infra validate`, and `terraform init -backend=false && terraform test` in each `infra/modules/<module>`.
+  - .NET: `dotnet build src && dotnet test src` (warnings as errors), and the container image builds (`docker build src/ReceiptFunctions` in CI).
+  - Scripts: `shellcheck -x` on every `*.sh`.
+
 ## Code humans can maintain
 
 Everything here must be maintainable by human developers, whoever (or whatever) wrote it. A developer new to the project understands a module in minutes and changes it with confidence.
