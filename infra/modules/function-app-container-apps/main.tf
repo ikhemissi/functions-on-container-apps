@@ -81,7 +81,7 @@ resource "azapi_resource" "function_app" {
         ingress = {
           external      = true
           targetPort    = local.target_port
-          transport     = "auto"
+          transport     = "Auto"
           allowInsecure = false
         }
         registries = [{

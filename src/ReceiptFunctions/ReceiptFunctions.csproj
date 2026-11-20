@@ -1,4 +1,4 @@
-<!-- The receipt functions: .NET 10 isolated worker, built into a container image (Dockerfile) for Container Apps. -->
+﻿<!-- The receipt functions: .NET 10 isolated worker, built into a container image (Dockerfile) for Container Apps. -->
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
@@ -9,6 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>ReceiptFunctions</RootNamespace>
+    <UserSecretsId>7ae6ec55-7810-488a-9469-51df9e9a5069</UserSecretsId>
   </PropertyGroup>
 
   <!-- Versions pinned here, in one place; the image build sees only this folder. -->
