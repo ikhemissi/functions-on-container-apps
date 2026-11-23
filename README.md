@@ -15,7 +15,7 @@
 
 ![You upload a receipts CSV; Event Grid turns it into a queue message with its own identity; a function app on Azure Container Apps (kind functionapp, scaling from zero) reads the message and the blob and writes a summary to a table with its managed identity; you read the summaries over HTTP.](docs/overview.svg)
 
-> **Status (2026-11-20): deployed and working end to end.** An upload is summarized about 12 seconds later, through Event Grid, the queue and the function, with managed identities only. Scaling to zero and back and the cost are *not tested yet*: [the verification table](docs/verification.md) tracks each check.
+> **Status (2026-11-23): deployed and verified end to end.** An upload is summarized about 12 seconds later when a replica runs, and within about 80 seconds from zero replicas, through Event Grid, the queue and the function, with managed identities only. An idle day costs about USD 0.25. Every check is in [the verification table](docs/verification.md).
 
 ## Why this sample
 
@@ -33,7 +33,7 @@ The scenario: fictional receipts. A CSV file (`date,merchant,amount,currency`) u
 
 ## How it works
 
-> Verified on 2026-11-20 ([V2–V5](docs/verification.md)); scaling from and to zero is *not tested yet* ([V6](docs/verification.md)).
+> Verified on 2026-11-20 and 2026-11-23 ([V2–V6](docs/verification.md)), scaling from and to zero included.
 
 ```mermaid
 flowchart LR
@@ -162,7 +162,17 @@ The first call after an idle period waits for a replica to start (scale from zer
 
 ## Cost
 
-*Not measured yet* ([V7](docs/verification.md)). The app scales to zero when idle; the expected idle cost is the storage accounts, the container registry (Basic) and the logs.
+Measured on 2026-11-21 and 2026-11-22 ([V7](docs/verification.md)), actual cost in francecentral, idle:
+
+| Meter | Per idle day (USD) |
+|---|---|
+| Container Registry (Basic) | 0.17 |
+| Log Analytics | 0.04 |
+| Container Apps (0 replicas) | 0.04 |
+| Storage, Event Grid, Key Vault | under 0.01 |
+| **Total** | **about 0.25 (about 7.50 per month)** |
+
+Processing a file costs a few seconds of one replica (0.5 vCPU, 1 GiB) on the Consumption workload profile. Defender for Cloud plans enabled on a subscription add their own cost.
 
 ## License
 
