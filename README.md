@@ -19,7 +19,7 @@
 
 ## Why this sample
 
-Azure Functions can run on Azure Container Apps as a container app of kind `functionapp`: the Functions programming model, on the same platform, network and scale rules as your other containers. Most examples use Bicep and connection strings. This sample shows the same pattern with Terraform and azd, with managed identities for every connection, and with uploads reaching the functions through Event Grid and a queue, so that no function key has to be created or shared.
+Azure Functions can run on Azure Container Apps as a container app of kind `functionapp`: the Functions programming model, on the same platform, network and scale rules as your other containers. The [official samples](https://github.com/Azure/azure-functions-on-container-apps) are written in Bicep. This sample shows the same pattern with Terraform and azd, with managed identities for every connection, and with uploads reaching the functions through Event Grid and a queue, so that no function key has to be created or shared.
 
 ## What it shows
 
@@ -122,8 +122,8 @@ The first call after an idle period waits for a replica to start (scale from zer
 
 ## Design notes
 
-- **Native `kind: functionapp` rather than a `Microsoft.Web/sites` app on a Container Apps environment** ([D1](docs/DECISIONS.md)): Microsoft recommends the native model for new workloads.
-- **azapi for the function app** ([D2](docs/DECISIONS.md)): `azurerm_container_app` has no `kind` argument in azurerm 4.x.
+- **Native `kind: functionapp` rather than a `Microsoft.Web/sites` app on a Container Apps environment** ([D1](docs/DECISIONS.md)): the [samples repository](https://github.com/Azure/azure-functions-on-container-apps#readme) marks the native model as recommended for new workloads.
+- **azapi for the function app** ([D2](docs/DECISIONS.md)): `azurerm_container_app` has no `kind` argument (checked in the azurerm 4.81 schema, 2026-11-23).
 - **Event Grid to a queue rather than a blob trigger** ([D3](docs/DECISIONS.md)): no system key to create, store and rotate for an Event Grid webhook, and the queue trigger has a generated scale rule.
 - **Two storage accounts** ([D4](docs/DECISIONS.md)): the Functions host's own blobs, queues and tables stay apart from the sample's data.
 - **The table through Azure Resource Manager** ([D9](docs/DECISIONS.md)): `azurerm_storage_table` sets access policies with a shared key, which the data account refuses; azapi creates it through ARM.
@@ -154,7 +154,8 @@ The first call after an idle period waits for a replica to start (scale from zer
 
 - The function app is declared with API version `2025-07-01` of `Microsoft.App/containerApps` (2026-11-20).
 - Container Apps generates scale rules from the triggers and needs ingress enabled for them; blob triggers scale only with Event Grid as their source ([Functions on Container Apps](https://learn.microsoft.com/azure/container-apps/functions-overview), page updated 2026-09-09).
-- Deployment slots and creating function keys in the portal are not available for Functions on Container Apps (same page).
+- Deployment slots, Functions proxies and generating function access keys in the portal are not available for Functions on Container Apps (same page).
+- Scale-out goes up to 1,000 replicas per app, 10 by default (same page); this sample sets 10.
 
 ## Clean up
 
