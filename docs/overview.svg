@@ -11,6 +11,9 @@
     <marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#138a7a"/>
     </marker>
+    <marker id="arrow-tech" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a5cc2"/>
+    </marker>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#1b1f3b" flood-opacity="0.12"/>
     </filter>
@@ -51,11 +54,11 @@
   <text class="name" x="440.0" y="540" text-anchor="middle">Storage table</text>
   <text class="kind" x="440.0" y="562" text-anchor="middle">ReceiptSummaries</text>
   <text class="kind" x="440.0" y="580" text-anchor="middle">Data storage</text>
-  <g filter="url(#shadow)"><rect x="620" y="510" width="220" height="84" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/></g>
+  <g filter="url(#shadow)"><rect x="620" y="510" width="220" height="84" rx="12" fill="#ffffff" stroke="#8a5cc2" stroke-width="1.5"/></g>
   <text class="name" x="730.0" y="540" text-anchor="middle">Host storage</text>
   <text class="kind" x="730.0" y="562" text-anchor="middle">leases, keys, state</text>
   <text class="kind" x="730.0" y="580" text-anchor="middle">Standard LRS</text>
-  <g filter="url(#shadow)"><rect x="910" y="510" width="220" height="84" rx="12" fill="#ffffff" stroke="#3d4466" stroke-width="1.5"/></g>
+  <g filter="url(#shadow)"><rect x="910" y="510" width="220" height="84" rx="12" fill="#ffffff" stroke="#8a5cc2" stroke-width="1.5"/></g>
   <text class="name" x="1020.0" y="540" text-anchor="middle">Application Insights</text>
   <text class="kind" x="1020.0" y="562" text-anchor="middle">telemetry</text>
   <text class="kind" x="1020.0" y="580" text-anchor="middle">Entra-authenticated</text>
@@ -69,16 +72,17 @@
   <polyline points="840,222 918,222" fill="none" stroke="#3d4466" stroke-width="2" marker-end="url(#arrow)"/>
   <text class="edge" x="879" y="212" text-anchor="middle">queue</text>
   <polyline points="860,340 1004,270" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
-  <text class="edge" x="960" y="318" text-anchor="start">reads message</text>
+  <text class="edge" x="960" y="318" text-anchor="start" style="fill:#138a7a">reads message</text>
   <polyline points="600,340 470,270" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
-  <text class="edge" x="500" y="318" text-anchor="end">reads blob</text>
+  <text class="edge" x="500" y="318" text-anchor="end" style="fill:#138a7a">reads blob</text>
   <polyline points="620,430 470,504" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
-  <text class="edge" x="510" y="470" text-anchor="end">writes summary</text>
-  <polyline points="730,430 730,504" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
-  <text class="edge" x="740" y="472" text-anchor="start">host state</text>
-  <polyline points="840,430 990,504" fill="none" stroke="#138a7a" stroke-width="2" marker-end="url(#arrow-teal)"/>
-  <text class="edge" x="930" y="465" text-anchor="start">telemetry</text>
+  <text class="edge" x="510" y="470" text-anchor="end" style="fill:#138a7a">writes summary</text>
+  <polyline points="730,430 730,504" fill="none" stroke="#8a5cc2" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow-tech)"/>
+  <text class="edge" x="740" y="472" text-anchor="start" style="fill:#8a5cc2">host state</text>
+  <polyline points="840,430 990,504" fill="none" stroke="#8a5cc2" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow-tech)"/>
+  <text class="edge" x="930" y="465" text-anchor="start" style="fill:#8a5cc2">telemetry</text>
   <polyline points="128,264 128,385 569,385" fill="none" stroke="#3d4466" stroke-width="2" marker-end="url(#arrow)"/>
   <text class="edge" x="310" y="376" text-anchor="start">GET /api/summaries</text>
-  <text class="footer" x="48" y="650">Arrows go from the caller to what it calls. Teal: the function app's managed identity. Event Grid writes to the queue with its own identity.</text>
+  <text class="footer" x="48" y="642">Function app, with its managed identity: <tspan style="fill:#138a7a;font-weight:600">teal, business data (receipts, summaries)</tspan>; <tspan style="fill:#8a5cc2;font-weight:600">purple dashed, technical (host state, telemetry)</tspan>.</text>
+  <text class="footer" x="48" y="662">Arrows go from the caller to what it calls. Event Grid writes to the queue with its own identity.</text>
 </svg>
